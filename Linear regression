@@ -3,8 +3,14 @@ import numpy as np
 from torch.autograd import Variable
 import torch.nn as nn
 
-#creating the linear regression model
+#DataLoading needs to be done as x_values and y_values
+x_train = np.array(x_values , dtype = np.float32)
+x_train = x_train.reshape(-1,1)
+#define a function of y(x)
+y_train = np.array(y_values , dtype = np.float32)
+y_train = y_train.reshape(-1,1)
 
+#creating the linear regression model
 class LinearRegressionModel(nn.Module):
     def __init__(self, input_size,output_size):
         super(LinearRegressionModel , self).__init__()
@@ -14,6 +20,8 @@ class LinearRegressionModel(nn.Module):
         out = self.linear(x)
         return out
 
+
+#Instantiate Model Class
 input_dim =1
 output_dim = 1
 
@@ -22,15 +30,18 @@ model = LinearRegressionModel(input_dim, output_dim)
 if torch.cuda.is_available():
     model.cuda()
     
+#Instantiate Loss class
 criterion = nn.MSELoss()
 
+#Instantiate Optimizer class
 optimizer = torch.optim.SGD(model.parameters() , lr = 0.01)
 
+#defining the value of epoch
 epochs = 100
 
+#Train model
 for epoch in range(epochs):
-    epoch =+1
-    
+        
     if torch.cuda.is_available():
         inputs = Variable(torch.from_numpy(x_train).cuda())
         labels = Variable(torch.from_numpy(y_train).cuda())
@@ -48,6 +59,6 @@ for epoch in range(epochs):
     
     optimizer.step()
     
-    print('epoch {}, loss {} '.format(epoch , loss.item()))
+    print('epoch {}, loss {} '.format(epoch+1 , loss.item()))
 
 
