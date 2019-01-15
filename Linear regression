@@ -1,0 +1,53 @@
+import torch
+import numpy as np
+from torch.autograd import Variable
+import torch.nn as nn
+
+#creating the linear regression model
+
+class LinearRegressionModel(nn.Module):
+    def __init__(self, input_size,output_size):
+        super(LinearRegressionModel , self).__init__()
+        self.linear = nn.Linear(input_dim , output_dim)
+        
+    def forward(self , x):
+        out = self.linear(x)
+        return out
+
+input_dim =1
+output_dim = 1
+
+model = LinearRegressionModel(input_dim, output_dim)
+
+if torch.cuda.is_available():
+    model.cuda()
+    
+criterion = nn.MSELoss()
+
+optimizer = torch.optim.SGD(model.parameters() , lr = 0.01)
+
+epochs = 100
+
+for epoch in range(epochs):
+    epoch =+1
+    
+    if torch.cuda.is_available():
+        inputs = Variable(torch.from_numpy(x_train).cuda())
+        labels = Variable(torch.from_numpy(y_train).cuda())
+    else:
+        inputs = Variable(torch.from_numpy(x_train))
+        labels = Variable(torch.from_numpy(y_train))
+
+    optimizer.zero_grad()
+    
+    outputs = model(inputs)
+    
+    loss = criterion(outputs , labels)
+    
+    loss.backward()
+    
+    optimizer.step()
+    
+    print('epoch {}, loss {} '.format(epoch , loss.item()))
+
+
