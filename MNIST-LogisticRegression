@@ -1,0 +1,127 @@
+#import packages
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+import torchvision.transforms as transforms
+import torchvision.datasets as dsets
+import matplotlib.pyplot as plt
+%matplotlib inline
+import numpy as np
+
+#This code uses MNIST dataset for logistic regression.you need to change the data loading code for other datasets
+
+#Loading data as train_dataset
+train_dataset = dsets.MNIST(root = './data',
+                           train = True,
+                           transform = transforms.ToTensor(),
+                           download = True)
+
+#Loading the test dataset
+test_dataset = dsets.MNIST(root = './data',
+                           train = False,
+                           transform = transforms.ToTensor())
+                           
+                           
+#Checking the length of dataset and shape of data(optional)
+len(train_dataset)
+train_dataset[0][0].numpy().shape
+
+#Defining batch size and number of iterations
+batch_size = 100
+n_iters = 3000
+
+#Finding the range for epochs
+num_epochs = n_iters/(len(train_dataset) / batch_size)
+num_epochs = int(num_epochs)
+
+#Making the dataset iterable
+train_loader = torch.utils.data.DataLoader(dataset = train_dataset,
+                                          batch_size = batch_size,
+                                          shuffle = True)
+                                          
+test_loader = torch.utils.data.DataLoader(dataset = test_dataset,
+                                          batch_size = batch_size,
+                                          shuffle = False)                                       
+                                          
+#Checking if the dataset has become iterable(optional)
+import collections
+isinstance(train_loader,collections.Iterable)
+isinstance(test_loader,collections.Iterable)
+
+
+#Creating the model
+class LogisticRegressionModel(nn.Module):
+    def __init__(self, input_size,output_size):
+        super(LogisticRegressionModel , self).__init__()
+        self.linear = nn.Linear(input_dim , output_dim)
+        
+    def forward(self , x):
+        out = self.linear(x)
+        return out
+    
+#Define the input and output dimensions (you need to update this if you use another dataset)
+input_dim =28*28
+output_dim = 10
+
+model = LinearRegressionModel(input_dim, output_dim)
+
+if torch.cuda.is_available():
+    model.cuda()
+
+#Defining the cross entropy loss
+criterion = nn.CrossEntropyLoss()
+
+#Initializing Optimizer
+learning_rate = 0.001
+optimizer = torch.optim.SGD(model.parameters() , lr = learning_rate)
+
+#Training the model
+iter = 0
+for epoch in range(num_epochs):
+    for i ,(images ,  labels) in enumerate(train_loader):
+        images = Variable(images.view(-1,28*28))
+        labels = Variable(labels)
+        
+        #clearing gradient w.r.t parameters
+        optimizer.zero_grad()
+        
+        #Forward pass to get outputs/labels
+        outputs = model(images)
+        
+        #calulate loss using Softmax and crossentropy
+        loss = criterion(outputs,labels)
+        
+        loss.backward()
+        
+        #updating parameters
+        optimizer.step()
+        
+        iter+=1
+        if iter % 500 ==0 :           #limiting the number of iterations to 500 at a time 
+            #calculating accuracy
+            correct = 0
+            total = 0
+            
+            #iterate through the test dataset
+            for images,labels in test_loader:
+                images = Variable(images.view(-1,28*28))
+                
+                
+                output = model(images)
+                
+                _, predicted = torch.max(outputs.data,1)
+                
+                total += labels.size(0)
+                
+                correct += (predicted == labels).sum()
+                
+            accuracy  = 100 * correct /total
+            
+            #print loss
+            
+            print('Iteration : {},Loss : {} ,Accuracy : {} '.format(iter,loss.item(),accuracy))
+                
+                
+            
+        
+        
